@@ -1,36 +1,56 @@
-
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { cadastrarUnidade } from "@/services/unidadeService";
 import { Unidade } from "@/types/types";
 
-interface CadastroUnidadeProps {
-  onAdicionar: (unidade: Unidade) => void;
-}
+// Tipagem específica para o formulário (minúsculas)
+type FormData = {
+  nome: string;
+  cidade: string;
+  tipo: "RESIDENCIAL" | "COMERCIAL" | "INDUSTRIAL";
+};
 
-export function CadastroUnidade({ onAdicionar }: CadastroUnidadeProps) {
-  const form = useForm({
+export function CadastroUnidade() {
+  const form = useForm<FormData>({
     defaultValues: {
       nome: "",
       cidade: "",
-      tipo: "" as "residencial" | "comercial" | "industrial",
+      tipo: "RESIDENCIAL",
     },
   });
 
-  const handleSubmit = (data: Omit<Unidade, "id">) => {
-    // Validação simples
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: cadastrarUnidade,
+    onSuccess: () => {
+      toast.success("Unidade cadastrada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["unidades"] });
+      form.reset();
+    },
+    onError: () => {
+      toast.error("Erro ao cadastrar unidade.");
+    },
+  });
+
+  const handleSubmit = (data: FormData) => {
     if (!data.nome || !data.cidade || !data.tipo) {
       toast.error("Todos os campos são obrigatórios");
       return;
     }
 
-    onAdicionar(data as Unidade);
-    toast.success("Unidade cadastrada com sucesso!");
-    form.reset();
+    const payload: Omit<Unidade, "id"> = {
+      nome: data.nome,
+      cidade: data.cidade,
+      tipo: data.tipo.toUpperCase() as Unidade["tipo"], // Ex: "residencial" -> "RESIDENCIAL"
+    };
+
+    mutate(payload);
   };
 
   return (
@@ -77,9 +97,9 @@ export function CadastroUnidade({ onAdicionar }: CadastroUnidadeProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="residencial">Residencial</SelectItem>
-                  <SelectItem value="comercial">Comercial</SelectItem>
-                  <SelectItem value="industrial">Industrial</SelectItem>
+                  <SelectItem value="RESIDENCIAL">Residencial</SelectItem>
+                  <SelectItem value="COMERCIAL">Comercial</SelectItem>
+                  <SelectItem value="INDUSTRIAL">Industrial</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -87,7 +107,9 @@ export function CadastroUnidade({ onAdicionar }: CadastroUnidadeProps) {
           )}
         />
 
-        <Button type="submit" className="w-full">Cadastrar Unidade</Button>
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Cadastrando..." : "Cadastrar Unidade"}
+        </Button>
       </form>
     </Form>
   );
