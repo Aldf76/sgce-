@@ -1,14 +1,37 @@
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { listarUnidades } from "@/services/unidadeService";
 import { Unidade } from "@/types/types";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Database } from "lucide-react";
 
-interface ListaUnidadesProps {
-  unidades: Unidade[];
-}
+export function ListaUnidades() {
+  const { data: unidades, isLoading, isError } = useQuery<Unidade[]>({
+    queryKey: ["unidades"],
+    queryFn: listarUnidades,
+  });
 
-export function ListaUnidades({ unidades }: ListaUnidadesProps) {
-  if (unidades.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-10 w-full rounded-md" />
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Erro</AlertTitle>
+        <AlertDescription>Não foi possível carregar as unidades.</AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!unidades || unidades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
         <Database className="h-12 w-12 mb-2" />
