@@ -1,11 +1,23 @@
 
 // Interface para unidade consumidora
 export interface Unidade {
-  id: string;
+  id?: number;
   nome: string;
   cidade: string;
-  tipo: 'residencial' | 'comercial' | 'industrial';
+  tipo: "RESIDENCIAL" | "COMERCIAL" | "INDUSTRIAL";
+  ativo?: boolean;
 }
+
+// Interface para tipar os dados do back-end
+export interface Pagina<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}
+
+
 
 // Interface para registro de consumo
 export interface Consumo {
