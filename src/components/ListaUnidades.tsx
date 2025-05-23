@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Unidade } from "@/types/types";
-import { database } from "lucide-react";
+import { Database } from "lucide-react";
 
 interface ListaUnidadesProps {
   unidades: Unidade[];
@@ -11,7 +11,7 @@ export function ListaUnidades({ unidades }: ListaUnidadesProps) {
   if (unidades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-        <database className="h-12 w-12 mb-2" />
+        <Database className="h-12 w-12 mb-2" />
         <p>Nenhuma unidade cadastrada</p>
       </div>
     );

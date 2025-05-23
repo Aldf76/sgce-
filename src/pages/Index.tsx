@@ -6,6 +6,7 @@ import { AlertaConsumo } from "@/components/AlertaConsumo";
 import { CadastroUnidade } from "@/components/CadastroUnidade";
 import { RegistroConsumo } from "@/components/RegistroConsumo";
 import { ListaUnidades } from "@/components/ListaUnidades";
+import { Unidade, Consumo, Alerta } from "@/types/types";
 
 const Index = () => {
   const [unidades, setUnidades] = useState<Unidade[]>([]);
