@@ -18,6 +18,12 @@ export const listarUnidades = async (): Promise<Unidade[]> => {
     const response = await api.get<Pagina<Unidade>>("/unidades");
     return response.data.content;
   };
+
+  // DELETE /unidades/{id}
+export const excluirUnidade = async (id: number): Promise<void> => {
+  await api.delete(`/unidades/${id}`);
+};
+
   
 
 

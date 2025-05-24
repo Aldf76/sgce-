@@ -1,15 +1,33 @@
-import { useQuery } from "@tanstack/react-query";
-import { listarUnidades } from "@/services/unidadeService";
+import { useQuery, useMutation,useQueryClient } from "@tanstack/react-query";
+import { listarUnidades, excluirUnidade } from "@/services/unidadeService";
 import { Unidade } from "@/types/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Trash } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Database } from "lucide-react";
 
 export function ListaUnidades() {
+  const queryClient = useQueryClient();
+
   const { data: unidades, isLoading, isError } = useQuery<Unidade[]>({
     queryKey: ["unidades"],
     queryFn: listarUnidades,
+  });
+
+
+  // mudanças para estabelecer botão de excluir.
+  const { mutate: excluir, isPending: excluindo } = useMutation({
+    mutationFn: excluirUnidade,
+    onSuccess: () => {
+      toast.success("Unidade excluída com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["unidades"] });
+    },
+    onError: () => {
+      toast.error("Erro ao excluir unidade.");
+    },
   });
 
   if (isLoading) {
@@ -56,6 +74,23 @@ export function ListaUnidades() {
               <TableCell className="font-medium">{unidade.nome}</TableCell>
               <TableCell>{unidade.cidade}</TableCell>
               <TableCell className="capitalize">{unidade.tipo}</TableCell>
+
+
+              <TableCell> {/*adição de table-cell para feature de exclusão*/}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => excluir(unidade.id!)}
+                  disabled={excluindo}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </TableCell>
+
+
+
+
+
             </TableRow>
           ))}
         </TableBody>
