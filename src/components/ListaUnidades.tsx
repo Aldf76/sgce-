@@ -5,11 +5,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Trash } from "lucide-react";
+import { Trash, Pencil } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Database } from "lucide-react";
 
-export function ListaUnidades() {
+//Prop onEditar, vai receber UNIDADE
+type Props = {
+  onEditar:(unidade:Unidade) => void;
+}
+
+export function ListaUnidades({ onEditar}: Props ) {
   const queryClient = useQueryClient();
 
   const { data: unidades, isLoading, isError } = useQuery<Unidade[]>({
@@ -66,6 +71,8 @@ export function ListaUnidades() {
             <TableHead>Nome</TableHead>
             <TableHead>Cidade</TableHead>
             <TableHead>Tipo</TableHead>
+            {/* NOVA COLUNA DE AÇÕES */}
+            <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -74,29 +81,32 @@ export function ListaUnidades() {
               <TableCell className="font-medium">{unidade.nome}</TableCell>
               <TableCell>{unidade.cidade}</TableCell>
               <TableCell className="capitalize">{unidade.tipo}</TableCell>
+              {/* NoVA CÉLULACOM BOTÕES DE AÇÃO */}
+              <TableCell className="space-x-2">
+              {/*BOYÃO DE EDIÇÃO QUE DISPARA A FUNÇÃO onEditar */}
 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEditar(unidade)} // chama setUnidadeSelecionada lá no index
+              >
+               <Pencil className="h-4 w-4"/>
+            </Button> 
 
-              <TableCell> {/*adição de table-cell para feature de exclusão*/}
+               {/* Botão de exclusão já como estava */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  const confirmacao = window.confirm("Tem certeza que deseja excluir esta unidade?");
-                  if (confirmacao) {
-                    excluir(unidade.id!);
-                  }
+                  const confirmacao = window.confirm("Deseja excluir esta unidade?");
+                  if (confirmacao) excluir(unidade.id!);
                 }}
                 disabled={excluindo}
-              >   
+              >
                 <Trash className="h-4 w-4" />
               </Button>
-              </TableCell>
-
-
-
-
-
-            </TableRow>
+            </TableCell>
+          </TableRow>
           ))}
         </TableBody>
       </Table>

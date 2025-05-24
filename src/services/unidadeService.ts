@@ -24,6 +24,16 @@ export const excluirUnidade = async (id: number): Promise<void> => {
   await api.delete(`/unidades/${id}`);
 };
 
+// PUT /unidades
+export const editarUnidade = async (
+  id: number,
+  dados: Omit<Unidade, "ativo"> // inclui "id", exclui "ativo"
+): Promise<Unidade> => {
+  const payload = { id, ...dados }; // backend exige id no corpo
+  const response = await api.put<Unidade>("/unidades", payload);
+  return response.data;
+};
+
   
 
 
