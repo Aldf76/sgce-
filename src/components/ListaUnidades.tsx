@@ -77,14 +77,19 @@ export function ListaUnidades() {
 
 
               <TableCell> {/*adição de table-cell para feature de exclusão*/}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => excluir(unidade.id!)}
-                  disabled={excluindo}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const confirmacao = window.confirm("Tem certeza que deseja excluir esta unidade?");
+                  if (confirmacao) {
+                    excluir(unidade.id!);
+                  }
+                }}
+                disabled={excluindo}
+              >   
+                <Trash className="h-4 w-4" />
+              </Button>
               </TableCell>
 
 
