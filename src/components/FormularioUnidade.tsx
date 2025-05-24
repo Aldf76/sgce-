@@ -133,15 +133,30 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
-          {mutation.isPending
-            ? modo === "criar"
-              ? "Cadastrando..."
-              : "Salvando alterações..."
-            : modo === "criar"
-            ? "Cadastrar Unidade"
-            : "Salvar Alterações"}
-        </Button>
+<div className="flex justify-between gap-2">
+  <Button type="submit" className="w-full" disabled={mutation.isPending}>
+    {mutation.isPending
+      ? modo === "criar"
+        ? "Cadastrando..."
+        : "Salvando alterações..."
+      : modo === "criar"
+      ? "Cadastrar Unidade"
+      : "Salvar Alterações"}
+  </Button>
+
+  {/* ✅ BOTÃO DE CANCELAR EDIÇÃO APARECE SOMENTE NO MODO EDITAR */}
+  {modo === "editar" && (
+    <Button
+      type="button"
+      variant="outline"
+      className="w-full"
+      onClick={aoFinalizar}
+    >
+      Cancelar
+    </Button>
+  )}
+</div>
+
       </form>
     </Form>
   );
