@@ -21,11 +21,20 @@ export interface Pagina<T> {
 
 // Interface para registro de consumo
 export interface Consumo {
-  id: string;
-  unidadeId: string;
-  dataReferencia: string; // formato YYYY-MM-DD
-  consumoKwh: string; // armazenado como string, mas convertido para número quando necessário
+  id: number;
+  unidadeId: number;
+  dataReferencia: string;
+  consumoKwh: number;
+  nomeUnidade: string;
+  cidade: string;
 }
+
+export interface ConsumoDTO {
+  unidadeId: number;
+  dataReferencia: string;
+  consumoKwh: number;
+}
+
 
 // Interface para alertas de consumo
 export interface Alerta {

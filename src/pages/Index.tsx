@@ -1,5 +1,14 @@
 import { useState } from "react";
-import {Card,CardContent,CardDescription,CardHeader,CardTitle,} from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { listarUnidades } from "@/services/unidadeService";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Tabs,
   TabsContent,
@@ -13,18 +22,16 @@ import { ListaUnidades } from "@/components/ListaUnidades";
 import { Unidade, Consumo, Alerta } from "@/types/types";
 
 const Index = () => {
-  const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const { data: unidades = [], isLoading } = useQuery({
+    queryKey: ["unidades"],
+    queryFn: listarUnidades,
+  });
+
   const [consumos, setConsumos] = useState<Consumo[]>([]);
   const [alertas, setAlertas] = useState<Alerta[]>([]);
 
-  // ✅ ESTADOS ADICIONADOS PARA SUPORTE À EDIÇÃO DE UNIDADES
   const [modoFormulario, setModoFormulario] = useState<"criar" | "editar">("criar");
   const [unidadeSelecionada, setUnidadeSelecionada] = useState<Unidade | null>(null);
-
-  const adicionarUnidade = (unidade: Unidade) => {
-    const novaUnidade = { ...unidade, id: Date.now() };
-    setUnidades([...unidades, novaUnidade]);
-  };
 
   const adicionarConsumo = (consumo: Consumo) => {
     const existeRegistro = consumos.some(
@@ -38,7 +45,7 @@ const Index = () => {
       return false;
     }
 
-    const novoConsumo = { ...consumo, id: Date.now().toString() };
+    const novoConsumo = { ...consumo, id: Date.now() }; // ✅
     setConsumos([...consumos, novoConsumo]);
     calcularAlertas([...consumos, novoConsumo]);
     return true;
@@ -108,7 +115,6 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card>
               <CardHeader>
-                {/* ✅ CABEÇALHO ADAPTADO PARA REFLETIR MODO */}
                 <CardTitle>
                   {modoFormulario === "editar" ? "Editar Unidade" : "Cadastro de Unidade"}
                 </CardTitle>
@@ -119,7 +125,6 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* ✅ FORMULÁRIO RECEBE MODO E UNIDADE SELECIONADA */}
                 <FormularioUnidade
                   modo={modoFormulario}
                   unidadeSelecionada={unidadeSelecionada}
@@ -137,7 +142,6 @@ const Index = () => {
                 <CardDescription>Unidades consumidoras cadastradas</CardDescription>
               </CardHeader>
               <CardContent>
-                {/* ✅ AGORA A LISTA DISPARA onEditar COM A UNIDADE */}
                 <ListaUnidades
                   onEditar={(unidade) => {
                     setUnidadeSelecionada(unidade);

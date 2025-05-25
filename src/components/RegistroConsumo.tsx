@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -6,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Consumo, Unidade } from "@/types/types";
+import { registrarConsumo } from "@/services/consumoService.ts"; // você vai criar isso
 
 interface RegistroConsumoProps {
   unidades: Unidade[];
-  onAdicionar: (consumo: Consumo) => boolean;
+  refetchConsumos?: () => void; // opcional: atualizar lista após registrar
+  onAdicionar?: (consumo: Consumo) => boolean;
 }
 
-export function RegistroConsumo({ unidades, onAdicionar }: RegistroConsumoProps) {
+export function RegistroConsumo({ unidades, refetchConsumos, onAdicionar }: RegistroConsumoProps) {
   const form = useForm({
     defaultValues: {
       unidadeId: "",
@@ -21,25 +22,41 @@ export function RegistroConsumo({ unidades, onAdicionar }: RegistroConsumoProps)
     },
   });
 
-  const handleSubmit = (data: Omit<Consumo, "id">) => {
-    // Validação simples
+  const handleSubmit = async (data: any) => {
     if (!data.unidadeId) {
       toast.error("Selecione uma unidade");
       return;
     }
+  
     if (!data.dataReferencia) {
-      toast.error("Selecione uma data de referência");
+      toast.error("Informe a data de referência");
       return;
     }
-    if (!data.consumoKwh || isNaN(parseFloat(data.consumoKwh)) || parseFloat(data.consumoKwh) <= 0) {
-      toast.error("Informe um consumo válido");
+  
+    const kwh = parseFloat(data.consumoKwh);
+    if (isNaN(kwh) || kwh <= 0) {
+      toast.error("Informe um valor de consumo válido");
       return;
     }
-
-    const sucesso = onAdicionar(data as Consumo);
-    if (sucesso) {
+  
+    try {
+      const consumoBase = {
+        unidadeId: Number(data.unidadeId),
+        dataReferencia: data.dataReferencia,
+        consumoKwh: kwh,
+      };
+  
+      const consumoRegistrado = await registrarConsumo(consumoBase);
+  
+      // ✅ Chama lógica do front (ex: atualizar gráfico/alerta)
+      const sucesso = onAdicionar?.(consumoRegistrado);
+      if (sucesso === false) return; // bloqueia caso duplicado no front
+  
       toast.success("Consumo registrado com sucesso!");
       form.reset();
+      refetchConsumos?.();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.erro || "Erro ao registrar consumo.");
     }
   };
 
@@ -60,7 +77,7 @@ export function RegistroConsumo({ unidades, onAdicionar }: RegistroConsumoProps)
                 </FormControl>
                 <SelectContent>
                   {unidades.map((unidade) => (
-                    <SelectItem key={unidade.id} value={unidade.id}>
+                    <SelectItem key={unidade.id} value={String(unidade.id)}>
                       {unidade.nome} ({unidade.cidade})
                     </SelectItem>
                   ))}
@@ -76,7 +93,7 @@ export function RegistroConsumo({ unidades, onAdicionar }: RegistroConsumoProps)
           name="dataReferencia"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mês de Referência</FormLabel>
+              <FormLabel>Data de Referência</FormLabel>
               <FormControl>
                 <Input type="date" {...field} />
               </FormControl>
@@ -92,7 +109,7 @@ export function RegistroConsumo({ unidades, onAdicionar }: RegistroConsumoProps)
             <FormItem>
               <FormLabel>Consumo (kWh)</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="Ex: 320.5" {...field} />
+                <Input type="number" step="0.01" placeholder="Ex: 250.5" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -106,7 +123,7 @@ export function RegistroConsumo({ unidades, onAdicionar }: RegistroConsumoProps)
         >
           Registrar Consumo
         </Button>
-        
+
         {unidades.length === 0 && (
           <p className="text-sm text-muted-foreground text-center">
             Cadastre uma unidade primeiro para registrar consumo
