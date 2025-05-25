@@ -1,9 +1,22 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { cadastrarUnidade, editarUnidade } from "@/services/unidadeService";
 import { Unidade } from "@/types/types";
@@ -61,7 +74,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
       );
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
       form.reset();
-      aoFinalizar?.(); // chama callback para voltar ao modo "criar"
+      aoFinalizar?.(); // volta ao modo "criar"
     },
     onError: () => {
       toast.error(
@@ -81,13 +94,13 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
         <FormField
           control={form.control}
           name="nome"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome da Unidade</FormLabel>
+              <FormLabel className="text-sm font-semibold">Nome da Unidade</FormLabel>
               <FormControl>
                 <Input placeholder="Ex: Filial São Paulo" {...field} />
               </FormControl>
@@ -101,7 +114,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           name="cidade"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cidade</FormLabel>
+              <FormLabel className="text-sm font-semibold">Cidade</FormLabel>
               <FormControl>
                 <Input placeholder="Ex: São Paulo" {...field} />
               </FormControl>
@@ -115,7 +128,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           name="tipo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tipo de Unidade</FormLabel>
+              <FormLabel className="text-sm font-semibold">Tipo de Unidade</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -133,30 +146,33 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           )}
         />
 
-<div className="flex justify-between gap-2">
-  <Button type="submit" className="w-full" disabled={mutation.isPending}>
-    {mutation.isPending
-      ? modo === "criar"
-        ? "Cadastrando..."
-        : "Salvando alterações..."
-      : modo === "criar"
-      ? "Cadastrar Unidade"
-      : "Salvar Alterações"}
-  </Button>
+        {/* Botões */}
+        <div className="flex justify-between gap-2">
+          <Button
+            type="submit"
+            className="w-full bg-[#D8282C] text-white hover:bg-[#b91d23]"
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending
+              ? modo === "criar"
+                ? "Cadastrando..."
+                : "Salvando alterações..."
+              : modo === "criar"
+              ? "Cadastrar Unidade"
+              : "Salvar Alterações"}
+          </Button>
 
-  {/* ✅ BOTÃO DE CANCELAR EDIÇÃO APARECE SOMENTE NO MODO EDITAR */}
-  {modo === "editar" && (
-    <Button
-      type="button"
-      variant="outline"
-      className="w-full"
-      onClick={aoFinalizar}
-    >
-      Cancelar
-    </Button>
-  )}
-</div>
-
+          {modo === "editar" && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={aoFinalizar}
+            >
+              Cancelar
+            </Button>
+          )}
+        </div>
       </form>
     </Form>
   );
