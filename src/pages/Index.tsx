@@ -15,11 +15,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { AlertaConsumo } from "@/components/AlertaConsumo";
 import { FormularioUnidade } from "@/components/FormularioUnidade";
 import { RegistroConsumo } from "@/components/RegistroConsumo";
 import { ListaUnidades } from "@/components/ListaUnidades";
-import { Unidade, Consumo, Alerta } from "@/types/types";
+import { Unidade, Consumo } from "@/types/types";
+import { VisualizacaoConsumo } from "@/components/VisualizacaoConsumo"; // ✅ NOVO COMPONENTE
 
 const Index = () => {
   const { data: unidades = [], isLoading } = useQuery({
@@ -28,8 +28,6 @@ const Index = () => {
   });
 
   const [consumos, setConsumos] = useState<Consumo[]>([]);
-  const [alertas, setAlertas] = useState<Alerta[]>([]);
-
   const [modoFormulario, setModoFormulario] = useState<"criar" | "editar">("criar");
   const [unidadeSelecionada, setUnidadeSelecionada] = useState<Unidade | null>(null);
 
@@ -45,57 +43,9 @@ const Index = () => {
       return false;
     }
 
-    const novoConsumo = { ...consumo, id: Date.now() }; // ✅
+    const novoConsumo = { ...consumo, id: Date.now() };
     setConsumos([...consumos, novoConsumo]);
-    calcularAlertas([...consumos, novoConsumo]);
     return true;
-  };
-
-  const calcularAlertas = (registrosConsumo: Consumo[]) => {
-    const novosAlertas: Alerta[] = [];
-    const unidadesMap = new Map();
-
-    registrosConsumo.forEach((consumo) => {
-      if (!unidadesMap.has(consumo.unidadeId)) {
-        unidadesMap.set(consumo.unidadeId, []);
-      }
-      unidadesMap.get(consumo.unidadeId).push({
-        ...consumo,
-        dataReferencia: new Date(consumo.dataReferencia),
-      });
-    });
-
-    unidadesMap.forEach((consumosUnidade, unidadeId) => {
-      const consumosOrdenados = consumosUnidade.sort(
-        (a: any, b: any) => b.dataReferencia.getTime() - a.dataReferencia.getTime()
-      );
-
-      if (consumosOrdenados.length >= 4) {
-        const ultimoConsumo = consumosOrdenados[0];
-        const somaTresAnteriores = consumosOrdenados
-          .slice(1, 4)
-          .reduce((acc: number, c: any) => acc + parseFloat(c.consumoKwh), 0);
-
-        const mediaTresAnteriores = somaTresAnteriores / 3;
-
-        if (parseFloat(ultimoConsumo.consumoKwh) > mediaTresAnteriores * 1.2) {
-          const unidade = unidades.find((u) => u.id === unidadeId);
-          novosAlertas.push({
-            id: Date.now().toString(),
-            unidadeId,
-            unidadeNome: unidade?.nome || "Unidade desconhecida",
-            consumoAtual: ultimoConsumo.consumoKwh,
-            mediaAnterior: mediaTresAnteriores.toFixed(2),
-            percentualAumento: (
-              ((parseFloat(ultimoConsumo.consumoKwh) / mediaTresAnteriores - 1) * 100)
-            ).toFixed(2),
-            dataReferencia: ultimoConsumo.dataReferencia.toISOString().split("T")[0],
-          });
-        }
-      }
-    });
-
-    setAlertas(novosAlertas);
   };
 
   return (
@@ -108,7 +58,7 @@ const Index = () => {
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="unidades">Unidades</TabsTrigger>
           <TabsTrigger value="consumo">Registro de Consumo</TabsTrigger>
-          <TabsTrigger value="alertas">Alertas</TabsTrigger>
+          <TabsTrigger value="visualizacao">Visualização</TabsTrigger> {/* ✅ Nova aba */}
         </TabsList>
 
         <TabsContent value="unidades">
@@ -168,16 +118,16 @@ const Index = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="alertas">
+        <TabsContent value="visualizacao"> {/* ✅ Substitui 'alertas' */}
           <Card>
             <CardHeader>
-              <CardTitle>Alertas de Consumo</CardTitle>
+              <CardTitle>Visualização de Consumos</CardTitle>
               <CardDescription>
-                Unidades com consumo 20% acima da média dos últimos 3 meses
+                Veja o histórico de consumo por unidade com gráfico e tabela.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AlertaConsumo alertas={alertas} />
+              <VisualizacaoConsumo /> {/* ✅ Novo componente */}
             </CardContent>
           </Card>
         </TabsContent>
