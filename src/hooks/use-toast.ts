@@ -1,13 +1,19 @@
+// Importa React e seus tipos
 import * as React from "react"
 
+// Tipagens do toast vindas do componente de UI do sistema
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
 
+// Limita a quantidade de toasts visíveis simultaneamente
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
 
+// Tempo (em ms) para remover o toast da tela após ser fechado (DISMISS)
+const TOAST_REMOVE_DELAY = 1000000 // aqui você pode ajustar para 5000 por ex.
+
+// Define o tipo completo de um toast (baseado em ToastProps + extras)
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
@@ -15,6 +21,7 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
+// Enum de ações possíveis (ADD, UPDATE, etc.)
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
@@ -22,13 +29,14 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
 
+// Gerador de IDs incremental e seguro
 let count = 0
-
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
 }
 
+// Define tipos de ação aceitos no reducer
 type ActionType = typeof actionTypes
 
 type Action =
@@ -49,16 +57,17 @@ type Action =
       toastId?: ToasterToast["id"]
     }
 
+// Estado principal: lista de toasts ativos
 interface State {
   toasts: ToasterToast[]
 }
 
+// Mapa para guardar os timeouts de remoção agendados
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
+// Agendador de remoção de toast
 const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
-    return
-  }
+  if (toastTimeouts.has(toastId)) return
 
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId)
@@ -71,6 +80,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
+// Reducer: gerencia como os toasts são adicionados, atualizados ou removidos
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
@@ -90,8 +100,7 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
+      // Marca o toast como fechado visualmente
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -112,6 +121,7 @@ export const reducer = (state: State, action: Action): State => {
         ),
       }
     }
+
     case "REMOVE_TOAST":
       if (action.toastId === undefined) {
         return {
@@ -126,10 +136,13 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
+// Lista de ouvintes que serão notificados quando o estado global mudar
 const listeners: Array<(state: State) => void> = []
 
+// Estado global fora do React
 let memoryState: State = { toasts: [] }
 
+// Dispara ações no reducer e notifica todos os componentes ouvintes
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
@@ -137,18 +150,28 @@ function dispatch(action: Action) {
   })
 }
 
+// Tipo básico de toast sem o ID
 type Toast = Omit<ToasterToast, "id">
 
+// Função para exibir um novo toast (programaticamente)
 function toast({ ...props }: Toast) {
   const id = genId()
 
+  // Permite atualizar o conteúdo do toast depois de criado
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
+  // Permite fechar o toast manualmente
+  const dismiss = () =>
+    dispatch({
+      type: "DISMISS_TOAST",
+      toastId: id,
+    })
+
+  // Cria o toast e envia ao reducer
   dispatch({
     type: "ADD_TOAST",
     toast: {
@@ -162,15 +185,17 @@ function toast({ ...props }: Toast) {
   })
 
   return {
-    id: id,
+    id,
     dismiss,
     update,
   }
 }
 
+// Hook que conecta um componente React ao sistema global de toasts
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
+  // Inscreve o componente no sistema global quando ele monta
   React.useEffect(() => {
     listeners.push(setState)
     return () => {
@@ -182,10 +207,16 @@ function useToast() {
   }, [state])
 
   return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    ...state, // contém toasts atuais
+    toast, // função para criar toasts
+    dismiss: (toastId?: string) =>
+      dispatch({ type: "DISMISS_TOAST", toastId }), // função para fechar um toast
   }
 }
 
+// Exporta o hook e a função para uso em qualquer lugar do sistema
 export { useToast, toast }
+
+
+//toasts são, em poucas palavras, notificações visuais temporarias. Aqui informamos ao usuário movimentos dentro do sistema
+// os positivos e os negativos .
