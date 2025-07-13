@@ -1,43 +1,45 @@
+// Importação do hook de formulários reativos
 import { useForm } from "react-hook-form";
+
+// React Query para mutações (POST/PUT) e gerenciamento de cache
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+// Componentes de formulário personalizados da UI
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
+  Form, FormControl, FormField, FormItem,
+  FormLabel, FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem,
+  SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import { cadastrarUnidade, editarUnidade } from "@/services/unidadeService";
+
+import { toast } from "sonner"; // Notificações de feedback ao usuário
+import { cadastrarUnidade, editarUnidade } from "@/services/unidadeService"; // Serviços da API
 import { Unidade } from "@/types/types";
 import { useEffect } from "react";
 
-// Tipagem do formulário
+// Tipagem dos dados do formulário
 type FormData = {
   nome: string;
   cidade: string;
   tipo: "RESIDENCIAL" | "COMERCIAL" | "INDUSTRIAL";
 };
 
+// Props esperadas: modo (criar/editar), unidade a ser editada, e callback pós-envio
 type Props = {
   modo: "criar" | "editar";
   unidadeSelecionada?: Unidade | null;
-  aoFinalizar?: () => void;
+  aoFinalizar?: () => void; // callback chamado após sucesso ou cancelamento
 };
 
+// Componente principal para cadastro ou edição de unidade
 export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Props) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient(); // Gerenciador de cache de queries
 
+  // Hook de controle do formulário
   const form = useForm<FormData>({
     defaultValues: {
       nome: "",
@@ -46,7 +48,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
     },
   });
 
-  // Preenche os dados se for modo edição
+  // Preenche os campos automaticamente ao entrar em modo de edição
   useEffect(() => {
     if (modo === "editar" && unidadeSelecionada) {
       form.reset({
@@ -55,10 +57,11 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
         tipo: unidadeSelecionada.tipo,
       });
     } else {
-      form.reset(); // limpa para modo criar
+      form.reset(); // Limpa tudo se mudar para modo de criação
     }
   }, [modo, unidadeSelecionada, form]);
 
+  // Modo dinâmico: usa POST (cadastrar) ou PUT (editar)
   const mutation = useMutation({
     mutationFn: async (dados: FormData) => {
       if (modo === "criar") {
@@ -72,9 +75,9 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
       toast.success(
         modo === "criar" ? "Unidade cadastrada com sucesso!" : "Unidade editada com sucesso!"
       );
-      queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      form.reset();
-      aoFinalizar?.(); // volta ao modo "criar"
+      queryClient.invalidateQueries({ queryKey: ["unidades"] }); // Atualiza a lista após edição
+      form.reset(); // Limpa os campos
+      aoFinalizar?.(); // Finaliza o modo de edição ou retorna ao modo de criação
     },
     onError: () => {
       toast.error(
@@ -83,18 +86,21 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
     },
   });
 
+  // Handler de envio do formulário
   const handleSubmit = (data: FormData) => {
+    // Validação básica (extra ao react-hook-form)
     if (!data.nome || !data.cidade || !data.tipo) {
       toast.error("Todos os campos são obrigatórios");
       return;
     }
 
-    mutation.mutate(data);
+    mutation.mutate(data); // Dispara a mutação (API)
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+        {/* Campo: Nome da Unidade */}
         <FormField
           control={form.control}
           name="nome"
@@ -109,6 +115,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           )}
         />
 
+        {/* Campo: Cidade */}
         <FormField
           control={form.control}
           name="cidade"
@@ -123,6 +130,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           )}
         />
 
+        {/* Campo: Tipo de Unidade (Select com 3 opções) */}
         <FormField
           control={form.control}
           name="tipo"
@@ -146,7 +154,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
           )}
         />
 
-        {/* Botões */}
+        {/* Botões principais (Cadastrar/Editar e Cancelar) */}
         <div className="flex justify-between gap-2">
           <Button
             type="submit"
@@ -162,6 +170,7 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
               : "Salvar Alterações"}
           </Button>
 
+          {/* Botão de cancelar (visível apenas em modo de edição) */}
           {modo === "editar" && (
             <Button
               type="button"
@@ -177,3 +186,10 @@ export function FormularioUnidade({ modo, unidadeSelecionada, aoFinalizar }: Pro
     </Form>
   );
 }
+
+
+/*
+O componente FormularioUnidade gerencia a entrada e edição de dados das unidades consumidoras. 
+Ele atua como um formulário dinâmico e reutilizável, adaptando-se ao modo "criar" ou "editar", com preenchimento automático de campos, integração direta com a API e feedback visual para o usuário. 
+Ele é essencial para o fluxo CRUD de unidades no SGCE, garantindo consistência e usabilidade no gerenciamento dos dados principais do sistema.
+*/
