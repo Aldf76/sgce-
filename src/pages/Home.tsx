@@ -1,12 +1,19 @@
+// Hook do React Router que permite redirecionar o usuário para outra rota do sistema
 import { useNavigate } from "react-router-dom";
+
+// Biblioteca de animação para suavizar a entrada dos elementos visuais (cards)
 import { motion } from "framer-motion";
+
+// Hooks do React: useEffect pode ser usado para buscar dados; useState armazena as métricas
 import { useEffect, useState } from "react";
+
+// Ícones usados nos cards (prontos para uso via biblioteca Lucide)
 import { Gauge, Building2, Zap } from "lucide-react";
 
 export function Home() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Permite mudar de página quando o botão "Começar" for clicado
 
-  // Simulação de métricas (integração real virá depois)
+  // Simulação de dados visuais – futuramente serão preenchidos com dados reais vindos da API
   const [metricas, setMetricas] = useState({
     totalUnidades: 7,
     mediaConsumo: 2130,
@@ -15,38 +22,42 @@ export function Home() {
   });
 
   useEffect(() => {
-    // Aqui entrará fetch/axios com dados reais
+    // Aqui futuramente será feito o carregamento dos dados reais com fetch ou axios
   }, []);
 
   return (
     <div className="min-h-screen bg-[#f4f6f9]">
-      {/* Header institucional */}
+      {" "}
+      {/* Fundo claro e altura mínima para ocupar a tela toda */}
+      {/* Cabeçalho fixo do sistema (nome institucional do sistema) */}
       <header className="bg-[#1E2547] text-white py-4 px-6 flex items-center gap-4 shadow">
-        <img src="/bipbrasil_logo.jpg" alt="Logo BIP" className="h-10 w-auto" />
-        <h1 className="text-xl font-semibold">Sistema de Gestão de Consumo Energético</h1>
+        <h1 className="text-xl font-semibold">
+          Sistema de Gestão de Consumo Energético
+        </h1>
       </header>
-
       <main className="max-w-6xl mx-auto px-4 py-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
-
-        {/* Título e subtítulo */}
+        {/* Título central e explicação da página */}
         <div className="text-center mb-10">
           <h2 className="text-2xl font-bold text-[#1E2547]">Visão Executiva</h2>
-          <p className="text-muted-foreground text-sm">Resumo geral do sistema</p>
+          <p className="text-muted-foreground text-sm">
+            Resumo geral do sistema
+          </p>
         </div>
 
-        {/* Cards de métricas */}
+        {/* Grade de cartões com animações para indicadores principais */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           <motion.div
-            className="bg-white p-6 rounded-xl shadow border-l-4 border-[#D8282C]"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            className="bg-white p-6 rounded-xl shadow border-l-4 border-[#D8282C]" // visual limpo com borda vermelha de destaque
+            initial={{ opacity: 0, y: 10 }} // começa invisível e ligeiramente deslocado
+            animate={{ opacity: 1, y: 0 }} // aparece com leve subida
+            transition={{ delay: 0.1 }} // atraso para criar efeito em cadeia
           >
             <div className="flex items-center gap-2 text-[#1E2547]">
-              <Building2 className="w-5 h-5" />
+              <Building2 className="w-5 h-5" /> // ícone
               <span className="text-sm font-medium">Unidades</span>
             </div>
-            <p className="text-2xl font-bold mt-2">{metricas.totalUnidades}</p>
+            <p className="text-2xl font-bold mt-2">{metricas.totalUnidades}</p>{" "}
+            // valor exibido
           </motion.div>
 
           <motion.div
@@ -59,7 +70,9 @@ export function Home() {
               <Zap className="w-5 h-5" />
               <span className="text-sm font-medium">Média Consumo</span>
             </div>
-            <p className="text-2xl font-bold mt-2">{metricas.mediaConsumo} kWh</p>
+            <p className="text-2xl font-bold mt-2">
+              {metricas.mediaConsumo} kWh
+            </p>
           </motion.div>
 
           <motion.div
@@ -72,7 +85,9 @@ export function Home() {
               <Gauge className="w-5 h-5" />
               <span className="text-sm font-medium">Pico Consumo</span>
             </div>
-            <p className="text-2xl font-bold mt-2">{metricas.picoConsumo} kWh</p>
+            <p className="text-2xl font-bold mt-2">
+              {metricas.picoConsumo} kWh
+            </p>
           </motion.div>
 
           <motion.div
@@ -88,7 +103,7 @@ export function Home() {
           </motion.div>
         </div>
 
-        {/* Botão de entrada */}
+          {/* Botão que leva para o sistema completo */}
         <div className="text-center">
           <button
             onClick={() => navigate("/sistema")}

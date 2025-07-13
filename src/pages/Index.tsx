@@ -1,10 +1,17 @@
-// src/pages/Index.tsx
-
+// Hook de estado do React
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { listarUnidades } from "@/services/unidadeService";
-import { Header } from "@/components/Header"; // ✅ Novo Header
 
+// Hook do React Query para buscar dados da API de forma reativa e com cache automático
+import { useQuery } from "@tanstack/react-query";
+
+// Função que acessa o back-end para listar as unidades cadastradas
+import { listarUnidades } from "@/services/unidadeService";
+
+// Cabeçalho padrão do sistema (título e logo centralizado)
+import { Header } from "@/components/Header";
+
+
+// Estrutura de cartões visuais com título, descrição e conteúdo
 import {
   Card,
   CardContent,
@@ -12,29 +19,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+// Componentes de abas para separar funcionalidades do sistema
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+
+// Componentes do sistema que compõem o conteúdo das abas
 import { FormularioUnidade } from "@/components/FormularioUnidade";
 import { RegistroConsumo } from "@/components/RegistroConsumo";
 import { ListaUnidades } from "@/components/ListaUnidades";
-import { Unidade, Consumo } from "@/types/types";
 import { VisualizacaoConsumo } from "@/components/VisualizacaoConsumo";
 
+// Tipos auxiliares para padronizar os dados
+import { Unidade, Consumo } from "@/types/types";
+
 const Index = () => {
+  // Busca dados das unidades cadastradas com React Query
   const { data: unidades = [], isLoading } = useQuery({
     queryKey: ["unidades"],
     queryFn: listarUnidades,
   });
 
+  // Lista local de consumos registrados temporariamente (sem salvar em banco)
   const [consumos, setConsumos] = useState<Consumo[]>([]);
+
+  // Controla se o formulário está em modo "criar" ou "editar"
   const [modoFormulario, setModoFormulario] = useState<"criar" | "editar">("criar");
+
+  // Guarda a unidade atualmente selecionada para edição
   const [unidadeSelecionada, setUnidadeSelecionada] = useState<Unidade | null>(null);
 
+
   const adicionarConsumo = (consumo: Consumo) => {
+    // Verifica se já existe registro de consumo para mesma unidade e mesmo mês
     const existeRegistro = consumos.some(
       (c) =>
         c.unidadeId === consumo.unidadeId &&
@@ -46,6 +67,7 @@ const Index = () => {
       return false;
     }
 
+    // Se não houver duplicidade, adiciona o novo registro à lista local
     const novoConsumo = { ...consumo, id: Date.now() };
     setConsumos([...consumos, novoConsumo]);
     return true;
@@ -53,9 +75,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[#f4f6f9]">
-      <Header /> {/* ✅ Inserção do cabeçalho institucional */}
+      <Header /> {/* Cabeçalho padrão da aplicação */}
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Tabs organizam a navegação entre seções funcionais do sistema */}
         <Tabs defaultValue="unidades" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="unidades">Unidades</TabsTrigger>
@@ -63,11 +86,13 @@ const Index = () => {
             <TabsTrigger value="visualizacao">Visualização</TabsTrigger>
           </TabsList>
 
+
           <TabsContent value="unidades">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
                   <CardTitle>
+                    {/* Muda o título conforme o modo de uso do formulário */}
                     {modoFormulario === "editar" ? "Editar Unidade" : "Cadastro de Unidade"}
                   </CardTitle>
                   <CardDescription>
@@ -77,6 +102,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Formulário de criação/edição de unidade */}
                   <FormularioUnidade
                     modo={modoFormulario}
                     unidadeSelecionada={unidadeSelecionada}
@@ -94,6 +120,7 @@ const Index = () => {
                   <CardDescription>Unidades consumidoras cadastradas</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Lista de unidades cadastradas, com opção de editar */}
                   <ListaUnidades
                     onEditar={(unidade) => {
                       setUnidadeSelecionada(unidade);
@@ -105,6 +132,7 @@ const Index = () => {
             </div>
           </TabsContent>
 
+
           <TabsContent value="consumo">
             <Card>
               <CardHeader>
@@ -112,6 +140,7 @@ const Index = () => {
                 <CardDescription>Adicione leituras de consumo mensal</CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Formulário para registrar consumo mensal de uma unidade */}
                 <RegistroConsumo
                   unidades={unidades}
                   onAdicionar={adicionarConsumo}
@@ -119,6 +148,7 @@ const Index = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
 
           <TabsContent value="visualizacao">
             <Card>
@@ -129,6 +159,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Componente que exibe os dados em formato visual e analítico */}
                 <VisualizacaoConsumo />
               </CardContent>
             </Card>
