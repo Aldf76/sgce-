@@ -1,8 +1,10 @@
-/* app.css */
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Ativa os estilos principais do Tailwind CSS:
+   - base: resets e normalizações
+   - components: estilos prontos para botões, cards, inputs
+   - utilities: classes utilitárias aplicadas diretamente nos elementos */
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
 
 /* 🌐 Estilos globais e identidade visual leve */
 
@@ -13,11 +15,13 @@ body {
 }
 
 :root {
-  --bip-red: #D8282C;
+  --bip-red: #dbdbdb;
   --bip-blue: #1E2547;
 }
 
-/* Espaçamento base para a div #root, caso usada */
+/* Define a altura mínima do app como 100% da tela
+   Organiza os elementos filhos em coluna (topo > meio > rodapé).
+   Isso permite um layout mais previsível e centralizado. */
 #root {
   min-height: 100vh;
   display: flex;
