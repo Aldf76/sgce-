@@ -137,11 +137,6 @@ export function VisualizacaoConsumo() {
             >
               {/* Cabeçalho com logo institucional e título do relatório */}
               <div className="flex items-center justify-between mb-4">
-                <img
-                  src="/bipbrasil_logo.jpg"
-                  alt="Logo BIP Brasil"
-                  className="h-10"
-                />
                 <h2 className="text-xl font-semibold">
                   Relatório de Consumo Energético
                 </h2>
