@@ -1,5 +1,7 @@
 // Hook do React Router que permite redirecionar o usuário para outra rota do sistema
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+
 
 // Biblioteca de animação para suavizar a entrada dos elementos visuais (cards)
 import { motion } from "framer-motion";
@@ -10,31 +12,50 @@ import { useEffect, useState } from "react";
 // Ícones usados nos cards (prontos para uso via biblioteca Lucide)
 import { Gauge, Building2, Zap } from "lucide-react";
 
+import { buscarMetricasDashboard } from "@/services/dashboardService";
+
+import { Header } from "@/components/Header";
+
 export function Home() {
   const navigate = useNavigate(); // Permite mudar de página quando o botão "Começar" for clicado
 
-  // Simulação de dados visuais – futuramente serão preenchidos com dados reais vindos da API
+  // estado local para armazenar os dados exibidos na home
   const [metricas, setMetricas] = useState({
-    totalUnidades: 7,
-    mediaConsumo: 2130,
-    picoConsumo: 340,
-    registros: 42,
+    totalUnidades: 0,
+    mediaConsumo: 0,
+    picoConsumo: 0,
+    registros: 0,
   });
 
+  // Hook de efeito que executa uma única vez ao carregar a página (com array de dependência vazio).
+  // Ele realiza a requisição para o back-end, por meio da função buscarMetricasDashboard(),
+  // e atualiza o estado local com os dados retornados da API.
+  // Isso garante que os cards exibidos na página Home reflitam os dados reais do sistema,
+  // atualizando automaticamente sempre que a Home for acessada após novas inserções no banco.
+
+  const location = useLocation();
+
   useEffect(() => {
-    // Aqui futuramente será feito o carregamento dos dados reais com fetch ou axios
-  }, []);
+    async function carregarMetricas() {
+      try {
+        const dados = await buscarMetricasDashboard();
+        console.log("🎯 Dashboard recebido:", dados);
+
+        setMetricas(dados);
+      } catch (error) {
+        console.error("Erro ao carregar métricas:", error);
+      }
+    }
+
+    carregarMetricas();
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-[#f4f6f9]">
       {" "}
       {/* Fundo claro e altura mínima para ocupar a tela toda */}
       {/* Cabeçalho fixo do sistema (nome institucional do sistema) */}
-      <header className="bg-[#1E2547] text-white py-4 px-6 flex items-center gap-4 shadow">
-        <h1 className="text-xl font-semibold">
-          Sistema de Gestão de Consumo Energético
-        </h1>
-      </header>
+      <Header/>
       <main className="max-w-6xl mx-auto px-4 py-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
         {/* Título central e explicação da página */}
         <div className="text-center mb-10">
@@ -53,11 +74,10 @@ export function Home() {
             transition={{ delay: 0.1 }} // atraso para criar efeito em cadeia
           >
             <div className="flex items-center gap-2 text-[#1E2547]">
-              <Building2 className="w-5 h-5" /> // ícone
+              <Building2 className="w-5 h-5" />
               <span className="text-sm font-medium">Unidades</span>
             </div>
             <p className="text-2xl font-bold mt-2">{metricas.totalUnidades}</p>{" "}
-            // valor exibido
           </motion.div>
 
           <motion.div
@@ -103,7 +123,7 @@ export function Home() {
           </motion.div>
         </div>
 
-          {/* Botão que leva para o sistema completo */}
+        {/* Botão que leva para o sistema completo */}
         <div className="text-center">
           <button
             onClick={() => navigate("/sistema")}
